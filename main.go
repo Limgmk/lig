@@ -27,6 +27,7 @@ var (
 	showUsedTime bool
 	showSecond   bool
 	showJSONMsg  bool
+	fmtJSONMsg   bool
 	showShort    bool
 )
 
@@ -40,42 +41,45 @@ func parseFlagByString(str []string) {
 
 func bindFlag() {
 
-	// Query options
 	flag.StringVarP(&queryHost, "query", "q", "", "Host name or IP address to query")
 	flag.StringVarP(&queryType, "type", "t", "A", "Type of the DNS record being queried (A, MX, NS...)")
 	flag.StringVarP(&queryNS, "nameserver", "n", "", "Address of the nameserver to send packets to")
 	flag.StringVar(&queryClass, "class", "IN", "Network class of the DNS record being queried (IN, CH, HS)")
 
-	// Protocol options
 	flag.BoolVarP(&nsTypeUDP, "udp", "U", false, "Use the DNS protocol over UDP")
 	flag.BoolVarP(&nsTypeTCP, "tcp", "T", false, "Use the DNS protocol over TCP")
 	flag.BoolVarP(&nsTypeTLS, "tls", "S", false, "Use the DNS-over-TLS protocol")
 	flag.BoolVarP(&nsTypeHTTP, "http", "H", false, "Use the DNS-over-HTTPS protocol")
 
-	// Sending options
-	// Output options
 	flag.BoolVar(&showWholeMsg, "message", false, "Show whole DNS message instead of only answers")
 	flag.BoolVarP(&showJSONMsg, "json", "J", false, "Display the output as JSON")
+	flag.BoolVar(&fmtJSONMsg, "fmtjson", false, "Format JSON data when display the output as JSON")
 	flag.BoolVar(&showSecond, "seconds", false, "Do not format durations, display them as seconds")
 	flag.BoolVar(&showUsedTime, "time", false, "Print how long the response took to arrive")
 	flag.BoolVarP(&showShort, "short", "1", false, "Short mode: display nothing but the first result")
-	// Meta options
 }
 
 func parseFlags() error {
+
 	bindFlag()
+
 	args := os.Args[1:]
 	if len(args) == 0 {
 		flag.Usage()
 		return errors.New("")
 	}
+
 	if !strings.HasPrefix(args[0], "-") {
 		queryHost = strings.TrimLeft(args[0], "-")
 		args = args[1:]
 	}
+
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "@") {
 			queryNS = arg
+		}
+		if num := D.StringToType[arg]; num != 0 {
+			queryType = arg
 		}
 	}
 
@@ -101,9 +105,7 @@ func parseFlags() error {
 		queryNS = strings.TrimPrefix(queryNS, "@")
 	}
 
-	//fmt.Printf("Host: %s\nQType: %s\nNameserver: %s\nQClass: %s\n--------------------------------\n\n\n", queryHost, queryType, queryNS, queryClass)
 	return nil
-
 }
 
 func main() {
@@ -114,9 +116,21 @@ func main() {
 
 	var query = new(D.Msg)
 
-	query.SetQuestion(D.Fqdn(queryHost), D.StringToType[queryType])
+	typeNum := D.StringToType[queryType]
+	if typeNum == 0 {
+		printError(fmt.Sprintf("Invalid query type: %s", queryType))
+		return
+	}
 
-	query.Question[0].Qclass = D.StringToClass[queryClass]
+	query.SetQuestion(D.Fqdn(queryHost), typeNum)
+
+	classNum := D.StringToClass[queryClass]
+	if classNum == 0 {
+		printError(fmt.Sprintf("Invalid query class: %s", queryClass))
+		return
+	}
+
+	query.Question[0].Qclass = classNum
 
 	query.SetEdns0(4096, false)
 

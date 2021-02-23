@@ -50,8 +50,7 @@ func formatTXT(txt []string) string {
 	return strings.Join(txt, " ")
 }
 
-func printTypeA(answare D.RR) {
-	a := answare.(*D.A)
+func printTypeA(a *D.A) {
 
 	aType := color.HiGreenString("A")
 
@@ -64,8 +63,7 @@ func printTypeA(answare D.RR) {
 	fmt.Printf("%s\t%s\t%s\t%s\n", aType, aName, aTTL, result)
 }
 
-func printTypeAAAA(answare D.RR) {
-	a := answare.(*D.AAAA)
+func printTypeAAAA(a *D.AAAA) {
 
 	aType := color.HiGreenString("AAAA")
 
@@ -78,8 +76,7 @@ func printTypeAAAA(answare D.RR) {
 	fmt.Printf("%s\t%s\t%s\t%s\n", aType, aName, aTTL, result)
 }
 
-func printTypeCNAME(answare D.RR) {
-	a := answare.(*D.CNAME)
+func printTypeCNAME(a *D.CNAME) {
 
 	aType := color.YellowString("CNAME")
 
@@ -92,8 +89,7 @@ func printTypeCNAME(answare D.RR) {
 	fmt.Printf("%s\t%s\t%s\t%s\n", aType, aName, aTTL, result)
 }
 
-func printTypeTXT(answare D.RR) {
-	a := answare.(*D.TXT)
+func printTypeTXT(a *D.TXT) {
 
 	aType := color.YellowString("TXT")
 
@@ -106,27 +102,52 @@ func printTypeTXT(answare D.RR) {
 	fmt.Printf("%s\t%s\t%s\t%s\n", aType, aName, aTTL, result)
 }
 
+func printTypeMX(a *D.MX) {
+	aType := color.HiCyanString("MX")
+
+	aName := color.HiBlueString(a.Header().Name)
+
+	aTTL := formatTTL(a.Header().Ttl)
+
+	p := a.Preference
+
+	result := fmt.Sprintf("\"%s\"", a.Mx)
+
+	fmt.Printf("%s\t%s\t%s\t%d\t%s\n", aType, aName, aTTL, p, result)
+
+}
+
 func printColourful(m *D.Msg) {
 	for _, a := range m.Answer {
-		switch a.(type) {
+		switch a2 := a.(type) {
 		case *D.A:
-			printTypeA(a)
+			printTypeA(a2)
 		case *D.AAAA:
-			printTypeAAAA(a)
+			printTypeAAAA(a2)
 		case *D.CNAME:
-			printTypeCNAME(a)
+			printTypeCNAME(a2)
 		case *D.TXT:
-			printTypeTXT(a)
+			printTypeTXT(a2)
+		case *D.MX:
+			printTypeMX(a2)
 		}
 	}
 }
 
 func printJSONMsg(m *D.Msg) {
 	jsonMsg := jsonDNS.Marshal(m)
-	data, err := json.Marshal(jsonMsg)
+
+	var data []byte
+	var err error
+	if fmtJSONMsg {
+		data, err = json.MarshalIndent(jsonMsg, "", "\t")
+	} else {
+		data, err = json.Marshal(jsonMsg)
+	}
 	if err != nil {
 		return
 	}
+
 	fmt.Println(string(data))
 }
 
@@ -141,6 +162,8 @@ func printAnswerSimple(m *D.Msg) {
 			fmt.Println(formatCNAME(a2.Target))
 		case *D.TXT:
 			fmt.Println(formatTXT(a2.Txt))
+		case *D.MX:
+			fmt.Println(fmt.Sprintf("%d \"%s\"", a2.Preference, a2.Mx))
 		}
 	}
 }
@@ -162,13 +185,4 @@ func printResult(m *D.Msg) {
 	}
 
 	printColourful(m)
-
-	//for _, ex := range m.Extra {
-	//	switch ee := ex.(type) {
-	//	case *D.OPT:
-	//		//log.Println("is opt")
-	//		//ee.
-	//		fmt.Printf("OPT\t \t \t \t \t%d %d %d %d %s\n", ee.UDPSize(), ee.Version(), ee.ExtendedRcode(), ee.Version(), ee.)
-	//	}
-	//}
 }
