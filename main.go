@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -54,7 +53,7 @@ func bindFlag() {
 
 	flag.BoolVar(&showWholeMsg, "message", false, "Show whole DNS message instead of only answers")
 	flag.BoolVarP(&showJSONMsg, "json", "J", false, "Display the output as JSON")
-	flag.BoolVar(&fmtJSONMsg, "fmtjson", false, "Format JSON data when display the output as JSON")
+	flag.BoolVar(&fmtJSONMsg, "jsonfmt", false, "Display the output as formatted JSON")
 	flag.BoolVar(&showSecond, "seconds", false, "Do not format durations, display them as seconds")
 	flag.BoolVar(&showUsedTime, "time", false, "Print how long the response took to arrive")
 	flag.BoolVarP(&showShort, "short", "1", false, "Short mode: display nothing but the first result")
@@ -132,8 +131,6 @@ func main() {
 	}
 
 	query.Question[0].Qclass = classNum
-
-	log.Println(query.Question[0].Qclass)
 
 	query.SetEdns0(4096, false)
 

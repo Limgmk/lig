@@ -19,7 +19,7 @@ test:
 	@$(TEST) -v
 
 install: build-linux
-	@upx -9 $(TARGET)/$(BINARY_NAME)-linux-$(ARCH)
+	@upx -1 $(TARGET)/$(BINARY_NAME)-linux-$(ARCH)
 	@sudo cp $(TARGET)/$(BINARY_NAME)-linux-$(ARCH) /usr/local/bin/$(BINARY_NAME)
 
 clean:

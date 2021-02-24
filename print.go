@@ -194,7 +194,7 @@ func printResult(m *D.Msg) {
 		return
 	}
 
-	if showJSONMsg {
+	if showJSONMsg || fmtJSONMsg {
 		printJSONMsg(m)
 		return
 	}
