@@ -11,6 +11,16 @@ import (
 	D "github.com/miekg/dns"
 )
 
+type Response struct {
+	*jsonDNS.Response
+	Question []PatchQuestion `json:"Question"`
+}
+
+type PatchQuestion struct{
+	*jsonDNS.Question
+	Class uint16 `json:"class"`
+}
+
 func printError(err string) {
 	header := color.HiRedString("Error")
 	fmt.Printf("%s: %s\n", header, err)
@@ -137,12 +147,21 @@ func printColourful(m *D.Msg) {
 func printJSONMsg(m *D.Msg) {
 	jsonMsg := jsonDNS.Marshal(m)
 
+	jsonMsg2 := new(Response)
+	jsonMsg2.Response = jsonMsg
+
+	patchQ := new(PatchQuestion)
+	patchQ.Question = &jsonMsg.Question[0]
+	patchQ.Class = m.Question[0].Qclass
+
+	jsonMsg2.Question = append(jsonMsg2.Question, *patchQ)
+
 	var data []byte
 	var err error
 	if fmtJSONMsg {
-		data, err = json.MarshalIndent(jsonMsg, "", "\t")
+		data, err = json.MarshalIndent(jsonMsg2, "", "\t")
 	} else {
-		data, err = json.Marshal(jsonMsg)
+		data, err = json.Marshal(jsonMsg2)
 	}
 	if err != nil {
 		return

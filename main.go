@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -131,6 +132,8 @@ func main() {
 	}
 
 	query.Question[0].Qclass = classNum
+
+	log.Println(query.Question[0].Qclass)
 
 	query.SetEdns0(4096, false)
 
