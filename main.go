@@ -8,6 +8,7 @@ import (
 	flag "github.com/spf13/pflag"
 	"os"
 	"strings"
+	"time"
 )
 
 var (
@@ -154,7 +155,9 @@ func main() {
 		return
 	}
 
-	result, rtt, err := client.Exchange(query)
+	startTime := time.Now()
+	result, _, err = client.Exchange(query)
+	rtt := time.Since(startTime)
 	if err != nil {
 		printError(fmt.Sprintf("query host from %s failed: %s", clientURL, err.Error()))
 		return
@@ -163,5 +166,4 @@ func main() {
 	if showTime {
 		fmt.Printf("Ran in %dms\n", rtt / 1e6)
 	}
-
 }
