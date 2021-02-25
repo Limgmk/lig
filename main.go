@@ -3,13 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/Limgmk/leedns/dns"
 	D "github.com/miekg/dns"
 	flag "github.com/spf13/pflag"
+	"os"
+	"strings"
 )
 
 var (
@@ -24,7 +22,7 @@ var (
 	nsTypeHTTP bool
 
 	showWholeMsg bool
-	showUsedTime bool
+	showTime bool
 	showSecond   bool
 	showJSONMsg  bool
 	fmtJSONMsg   bool
@@ -55,7 +53,7 @@ func bindFlag() {
 	flag.BoolVarP(&showJSONMsg, "json", "J", false, "Display the output as JSON")
 	flag.BoolVar(&fmtJSONMsg, "jsonfmt", false, "Display the output as formatted JSON")
 	flag.BoolVar(&showSecond, "seconds", false, "Do not format durations, display them as seconds")
-	flag.BoolVar(&showUsedTime, "time", false, "Print how long the response took to arrive")
+	flag.BoolVar(&showTime, "time", false, "Print how long the response took to arrive")
 	flag.BoolVarP(&showShort, "short", "1", false, "Short mode: display nothing but the first result")
 }
 
@@ -156,22 +154,14 @@ func main() {
 		return
 	}
 
-	if showUsedTime {
-		startTime := time.Now().UnixNano()
-		result, err = client.Exchange(query)
-		endTime := time.Now().UnixNano()
-		if err != nil {
-			printError(fmt.Sprintf("query host from %s failed: %s", clientURL, err.Error()))
-			return
-		}
-		printResult(result)
-		fmt.Printf("Ran in %dms\n", (endTime-startTime)/1e6)
-	} else {
-		result, err = client.Exchange(query)
-		if err != nil {
-			printError(fmt.Sprintf("query host from %s failed: %s", clientURL, err.Error()))
-			return
-		}
-		printResult(result)
+	result, rtt, err := client.Exchange(query)
+	if err != nil {
+		printError(fmt.Sprintf("query host from %s failed: %s", clientURL, err.Error()))
+		return
 	}
+	printResult(result)
+	if showTime {
+		fmt.Printf("Ran in %dms\n", rtt / 1e6)
+	}
+
 }
