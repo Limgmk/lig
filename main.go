@@ -47,7 +47,7 @@ func bindFlag() {
 	flag.BoolVarP(&nsTypeUDP, "udp", "U", false, "Use the DNS protocol over UDP")
 	flag.BoolVarP(&nsTypeTCP, "tcp", "T", false, "Use the DNS protocol over TCP")
 	flag.BoolVarP(&nsTypeTLS, "tls", "S", false, "Use the DNS-over-TLS protocol")
-	flag.BoolVarP(&nsTypeHTTP, "http", "H", false, "Use the DNS-over-HTTPS protocol")
+	flag.BoolVarP(&nsTypeHTTP, "https", "H", false, "Use the DNS-over-HTTPS protocol")
 
 	flag.BoolVar(&showWholeMsg, "message", false, "Show whole DNS message instead of only answers")
 	flag.BoolVarP(&showJSONMsg, "json", "J", false, "Display the output as JSON")
